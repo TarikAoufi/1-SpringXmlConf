@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd	
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- 
+		Définition des properties (on peut directement définir la location 
+		dans l'attribut location du context:property-placeholder) 
+	-->
+	<util:properties id="properties" location="classpath:config.properties" />
+	<context:property-placeholder
+		properties-ref="properties" />
+
+	<!-- 
+		 Bean défini avec l'id personneService de type singleton. La méthode 
+		 init et la méthode destroy sont respectivement définies par init-method et 
+		 destroy-method   lazy-init=true 
+	-->
+	<bean id="personneService" init-method="init" destroy-method="destroy"
+		class="fr.aoufi.springsamplexml.service.PersonneServiceImpl" scope="singleton"> <!--  lazy-init=true -->
+		<!-- injection via le constructeur -->
+		<!-- <constructor-arg ref="personneDAO" /> -->
+		<!-- injection via le setter (on peut mélanger les deux formes d'injection 
+			pour un même objet. on utilise ref pour faire une référence au bean nommé 
+			personneDAO -->
+		<property name="personneDAO" ref="personneDAO" />
+	</bean>
+
+	<!-- 
+		Définition d'un bean de type datasource provenant d'un autre package. 
+		Les properties de type string sont des values et non des ref. Les properties 
+		sont aussi remplacées dans le fichier xml par le propertysoureplaceholder 
+	-->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${db.driverclassname}" />
+		<property name="url" value="${db.url}" />
+		<property name="username" value="${db.username}" />
+		<property name="password" value="${db.password}" />
+	</bean>
+	
+	<!-- bean instancié si le profil jpa est appelé -->
+	<beans profile="jpa">
+		<bean id="personneDAO" class="fr.aoufi.springsamplexml.dao.PersonneJPADAO" />
+	</beans>
+	
+	<!-- bean instancié si le profil jdbc est appelé -->
+	<beans profile="jdbc">
+		<bean id="personneDAO" class="fr.aoufi.springsamplexml.dao.PersonneJDBCDAO" />
+	</beans>
+
+
+</beans>
